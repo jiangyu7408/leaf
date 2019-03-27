@@ -1,6 +1,7 @@
 package gate
 
 import (
+	"fmt"
 	"github.com/name5566/leaf/chanrpc"
 	"github.com/name5566/leaf/log"
 	"github.com/name5566/leaf/network"
@@ -29,6 +30,7 @@ type Gate struct {
 }
 
 func (gate *Gate) Run(closeSig chan bool) {
+	log.Debug("Module Gate RUN")
 	var wsServer *network.WSServer
 	if gate.WSAddr != "" {
 		wsServer = new(network.WSServer)
@@ -42,10 +44,12 @@ func (gate *Gate) Run(closeSig chan bool) {
 		wsServer.NewAgent = func(conn *network.WSConn) network.Agent {
 			a := &agent{conn: conn, gate: gate}
 			if gate.AgentChanRPC != nil {
+				fmt.Println("send NewAgent msg through AgentChanRPC")
 				gate.AgentChanRPC.Go("NewAgent", a)
 			}
 			return a
 		}
+		log.Debug("WSServer created")
 	}
 
 	var tcpServer *network.TCPServer
@@ -68,6 +72,7 @@ func (gate *Gate) Run(closeSig chan bool) {
 
 	if wsServer != nil {
 		wsServer.Start()
+		log.Debug("WSServer started")
 	}
 	if tcpServer != nil {
 		tcpServer.Start()
